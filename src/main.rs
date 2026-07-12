@@ -14,13 +14,23 @@ fn mapchar(v: i32) -> char {
 
 fn printmap(map: [[i32; X]; Y]){
     print!("+ ");
+    for _i in 0..Y {
+        print!("- ");
+    }
+    println!("+");
     for x in map {
+        print!("+ ");
         for y in x {
             let c = mapchar(y);
             print!("{c}{c}");
         }
-        println!();
+        println!("+");
     }
+    print!("+ ");
+    for _i in 0..Y {
+        print!("- ");
+    }
+    println!("+");
 }
 
 fn heatmap(map: [[i32; X]; Y]){
@@ -51,7 +61,7 @@ fn nextmap(current: [[i32; X];  Y], next: &mut [[i32; X]; Y]){
                 1
             } else if c_cell == 0 {
                 0
-            } else if adjacencies == 2 || adjacencies == 3 {
+            } else if c_cell == 1 && (adjacencies == 2 || adjacencies == 3) {
                 1
             } else {
                 0
@@ -91,6 +101,6 @@ fn main() {
         //printmap(bmp[next]);
         if hmp {heatmap(bmp[i]);}
         i = next;
-        thread::sleep(time::Duration::from_millis(250));
+        thread::sleep(time::Duration::from_millis(125));
     }
 }
