@@ -1,53 +1,49 @@
 use std::{env, thread, time, vec};
 use rand::Rng;
+use ncurses::{ll::addstr, *};
 
 fn mapchar(v: i32) -> char {
     return match v {
-        1 => '█',
-        0 => ' ',
+         1 => '█',
+         0 => ' ',
+        -1 => '~', // Out of bounds
         _ => '?'
     }
 }
 
-fn printmap(map: & Vec<Vec<i32>>){
-    print!("\n    ");
-    let X = map.len();
-    let Y = map[0].len();
-    for _i in 0..Y-1 {
-        let __i = _i % 10;
-        print!("{__i} ");
+// scons window id
+static mut ww: i8 = -1;
+
+fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32)) -> char {
+    if pos.0 < 0 || pos.1 < 0 {
+        mapchar(-1)
+    } else if pos.0 >= map.len() as i32 || pos.1 >= map[0].len() as i32 {
+        mapchar(-1)
+    } else {
+        let ch = map[pos.0 as usize][pos.1 as usize];
+        mapchar(ch)
     }
-    print!("\n  + ");
-    for _i in 0..Y-1 {
-        print!("- ");
-    }
-    println!("+");
-    for ix in 1..X {
-        let ixx = ix % 10;
-        print!("{ixx} + ");
-        for iy in 1..Y {
-            let c = mapchar(map[ix][iy]);
-            print!("{c}{c}");
+}
+
+fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32)){
+    let x_size = map.len();
+    let y_size = map[0].len();
+    
+    let mut lww = unsafe { // assustador
+        ww
+    };
+    let screen_max = (getmaxx(&mut lww), getmaxy(&mut lww));
+
+    for xi in 0 .. screen_max.0 {
+        for yi in 1 .. screen_max.1 {
+            let cx = xi + add.0;
+            let cy = yi + add.1;
         }
-        println!("+");
     }
-    /*for x in map {
-        print!("+ ");
-        for y in x {
-            let c = mapchar(y);
-            print!("{c}{c}");
-        }
-        println!("+");
-    }*/
-    print!("  + ");
-    for _i in 0..Y-1 {
-        print!("- ");
-    }
-    println!("+");
 }
 
 fn heatmap(map: & Vec<Vec<i32>>){
-    let X = map.len();
+    /*let X = map.len();
     let Y = map[0].len();
     for x in 0..X {
         for y in 0..Y {
@@ -55,7 +51,7 @@ fn heatmap(map: & Vec<Vec<i32>>){
             print!("{v} ");
         }
         println!();
-    }
+    }*/
 }
 
 fn adjacencies(x: usize, y: usize, map: & Vec<Vec<i32>>) -> i32 {
@@ -119,6 +115,8 @@ fn main() {
     let mut size_x = 32;
     let mut size_y = 32;
 
+    unsafe { ww = 2; }; // tenebroso
+
     resize(bmp.get_mut(0).unwrap(), size_x, size_x);
     resize(bmp.get_mut(1).unwrap(), size_y, size_y);
     
@@ -137,7 +135,6 @@ fn main() {
         let h = bmp.split_at_mut(1);
         let t = if i == 0 {(h.0,h.1)} else {(h.1,h.0)};
         
-        //let ue = t.0.get_mut(0).expect("f");
         nextmap(
             t.0.get_mut(0).expect("rip t0"),
             t.1.get_mut(0).expect("rip t1")
@@ -145,7 +142,7 @@ fn main() {
         println!("{i} -> {next}");
         
         if hmp {heatmap(& bmp[i]);}
-        printmap(& bmp[i]);
+        printmap(& bmp[i],(0,0));
         i = next;
         thread::sleep(time::Duration::from_millis(125));
     }
