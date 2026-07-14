@@ -1,6 +1,6 @@
-use std::{env, thread, time, vec};
+use std::{env, ops::Add, thread, time, vec};
 use rand::Rng;
-use ncurses::{ll::addstr, *};
+use pancurses::*;
 
 fn mapchar(v: i32) -> char {
     return match v {
@@ -10,9 +10,6 @@ fn mapchar(v: i32) -> char {
         _ => '?'
     }
 }
-
-// scons window id
-static mut ww: i8 = -1;
 
 fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32)) -> char {
     if pos.0 < 0 || pos.1 < 0 {
@@ -25,20 +22,23 @@ fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32)) -> char {
     }
 }
 
-fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32)){
+fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
     let x_size = map.len();
     let y_size = map[0].len();
-    
-    let mut lww = unsafe { // assustador
-        ww
-    };
-    let screen_max = (getmaxx(&mut lww), getmaxy(&mut lww));
+     
+    let screen_max = (
+        window.get_max_x()/2,
+        window.get_max_y()
+    );
 
     for xi in 0 .. screen_max.0 {
         for yi in 1 .. screen_max.1 {
             let cx = xi + add.0;
             let cy = yi + add.1;
-        }
+            window.mv(yi, xi*2);
+            let ch = getchar(map, (xi,yi));
+                window.printw(&String::from(ch).add(&ch.to_string()));
+            }
     }
 }
 
@@ -114,9 +114,8 @@ fn main() {
     let n = 16;
     let mut size_x = 32;
     let mut size_y = 32;
-
-    unsafe { ww = 2; }; // tenebroso
-
+    let window = initscr();
+    
     resize(bmp.get_mut(0).unwrap(), size_x, size_x);
     resize(bmp.get_mut(1).unwrap(), size_y, size_y);
     
@@ -139,11 +138,13 @@ fn main() {
             t.0.get_mut(0).expect("rip t0"),
             t.1.get_mut(0).expect("rip t1")
         );
-        println!("{i} -> {next}");
+        // println!("{i} -> {next}");
         
         if hmp {heatmap(& bmp[i]);}
-        printmap(& bmp[i],(0,0));
+        printmap(& bmp[i],(0,0), &window);
         i = next;
-        thread::sleep(time::Duration::from_millis(125));
+        window.refresh();
+        // window.clear();
+        thread::sleep(time::Duration::from_millis(100));
     }
 }
