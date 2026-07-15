@@ -4,14 +4,17 @@ use pancurses::*;
 
 fn mapchar(v: i32) -> char {
     return match v {
-         1 => '█',
-         0 => ' ',
+        1 => '█',
+        0 => ' ',
         -1 => '~', // Out of bounds
         _ => '?'
     }
 }
 
-fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32)) -> char {
+fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32), max_d: (i32, i32)) -> char {
+    let mut pos = (pos.0, pos.1);
+    pos.0 = pos.0.rem_euclid(max_d.0);
+    pos.1 = pos.1.rem_euclid(max_d.1);
     if pos.0 < 0 || pos.1 < 0 {
         mapchar(-1)
     } else if pos.0 >= map.len() as i32 || pos.1 >= map[0].len() as i32 {
@@ -23,8 +26,8 @@ fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32)) -> char {
 }
 
 fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
-    let _x_size = map.len();
-    let _y_size = map[0].len();
+    let x_size = map.len() as i32;
+    let y_size = map[0].len() as i32;
      
     let screen_max = (
         window.get_max_x(),
@@ -36,9 +39,9 @@ fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
             let cx = xi/2 + add.0;
             let cy = yi + add.1;
             window.mv(yi, xi);
-            let ch = getchar(map, (cx,cy));
-                window.printw(&String::from(ch).add(&ch.to_string()));
-            }
+            let ch = getchar(map, (cx,cy), (x_size, y_size));
+            window.addnstr(ch.to_string() + ch.to_string().as_str(),3);
+        }
     }
 }
 
@@ -106,14 +109,17 @@ fn resize(bmp: &mut Vec<Vec<i32>>, x: usize, y: usize){
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-
     println!("Olá mundo :)");
     let mut bmp = [&mut vec!(),&mut vec!()];
-    let n = 16;
-    let size_x = 32;
-    let size_y = 32;
+    let n = 5;
+    let size_x = 16;
+    let size_y = 16;
     let window = initscr();
     window.nodelay(true);
+    noecho();
+    pancurses::beep();
+    pancurses::cbreak();
+    
     
     resize(bmp.get_mut(0).unwrap(), size_x, size_x);
     resize(bmp.get_mut(1).unwrap(), size_y, size_y);
@@ -145,21 +151,24 @@ fn main() {
         i = next;
         
         window.mv(0,120);
-        let ch = match window.getch() {
-            Some(Input::Character(c)) => c,
-            _ => '?'
-        };
-        match ch {
-            'W' => pos.1 -= 1,
-            'A' => pos.0 -= 1,
-            'S' => pos.1 += 1,
-            'D' => pos.0 += 1,
-            _ => {}
+        loop {
+            let ch = match window.getch() {
+                Some(Input::Character(c)) => c,
+                None => {break;},
+                _ => '?'
+            };
+            match ch {
+                'W' | 'w' => pos.1 -= 1,
+                'A' | 'a' => pos.0 -= 1,
+                'S' | 's' => pos.1 += 1,
+                'D' | 'd' => pos.0 += 1,
+                _ => {}
+            };
         };
         
         window.addstr(format!("  ({}  {})  ", pos.0, pos.1));
         window.refresh();
 
-        thread::sleep(time::Duration::from_millis(10));
+        thread::sleep(time::Duration::from_millis(50));
     }
 }
