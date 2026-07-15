@@ -27,16 +27,16 @@ fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
     let y_size = map[0].len();
      
     let screen_max = (
-        window.get_max_x()/2,
+        window.get_max_x(),
         window.get_max_y()
     );
 
     for xi in 0 .. screen_max.0 {
-        for yi in 1 .. screen_max.1 {
-            let cx = xi + add.0;
+        for yi in 0 .. screen_max.1 {
+            let cx = xi/2 + add.0;
             let cy = yi + add.1;
-            window.mv(yi, xi*2);
-            let ch = getchar(map, (xi,yi));
+            window.mv(yi, xi);
+            let ch = getchar(map, (cx,cy));
                 window.printw(&String::from(ch).add(&ch.to_string()));
             }
     }
@@ -115,6 +115,7 @@ fn main() {
     let mut size_x = 32;
     let mut size_y = 32;
     let window = initscr();
+    window.nodelay(true);
     
     resize(bmp.get_mut(0).unwrap(), size_x, size_x);
     resize(bmp.get_mut(1).unwrap(), size_y, size_y);
@@ -127,6 +128,7 @@ fn main() {
     }
 
     let hmp: bool = args.contains(&String::from("--heatmap"));
+    let mut pos = (0,0);
 
     let mut i: usize = 0;
     loop {
@@ -141,10 +143,25 @@ fn main() {
         // println!("{i} -> {next}");
         
         if hmp {heatmap(& bmp[i]);}
-        printmap(& bmp[i],(0,0), &window);
+        printmap(& bmp[i],pos, &window);
         i = next;
+        
+        window.mv(0,120);
+        let ch = match window.getch() {
+            Some(Input::Character(c)) => c,
+            _ => '?'
+        };
+        match ch {
+            'W' => pos.1 -= 1,
+            'A' => pos.0 -= 1,
+            'S' => pos.1 += 1,
+            'D' => pos.0 += 1,
+            _ => {}
+        };
+        
+        window.addstr(format!("  ({}  {})  ", pos.0, pos.1));
         window.refresh();
-        // window.clear();
-        thread::sleep(time::Duration::from_millis(100));
+
+        thread::sleep(time::Duration::from_millis(10));
     }
 }
