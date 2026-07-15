@@ -112,8 +112,8 @@ fn main() {
     println!("Olá mundo :)");
     let mut bmp = [&mut vec!(),&mut vec!()];
     let n = 5;
-    let size_x = 16;
-    let size_y = 16;
+    let size_x = 64; // TODO: Faz isso ser argumento da aplicaçãao
+    let size_y = 64;
     let window = initscr();
     window.nodelay(true);
     noecho();
