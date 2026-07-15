@@ -23,8 +23,8 @@ fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32)) -> char {
 }
 
 fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
-    let x_size = map.len();
-    let y_size = map[0].len();
+    let _x_size = map.len();
+    let _y_size = map[0].len();
      
     let screen_max = (
         window.get_max_x(),
@@ -42,7 +42,7 @@ fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
     }
 }
 
-fn heatmap(map: & Vec<Vec<i32>>){
+fn heatmap(_map: & Vec<Vec<i32>>){
     /*let X = map.len();
     let Y = map[0].len();
     for x in 0..X {
@@ -67,11 +67,11 @@ fn adjacencies(x: usize, y: usize, map: & Vec<Vec<i32>>) -> i32 {
 }
 
 fn nextmap(current: & Vec<Vec<i32>>, next: &mut Vec<Vec<i32>>){
-    let X = current.len();
+    let _X = current.len();
     let Y = current[0].len();
 
     for x in 0..current.len() {
-        let row = current.get(x).expect("wuh?");
+        let _row = current.get(x).expect("wuh?");
         for y in 0..Y {
             let adjacencies: i32 = adjacencies(x, y, current);
             let c_cell: i32 = current[x][y];
@@ -112,8 +112,8 @@ fn main() {
     println!("Olá mundo :)");
     let mut bmp = [&mut vec!(),&mut vec!()];
     let n = 16;
-    let mut size_x = 32;
-    let mut size_y = 32;
+    let size_x = 32;
+    let size_y = 32;
     let window = initscr();
     window.nodelay(true);
     
