@@ -43,10 +43,10 @@ fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
 }
 
 fn heatmap(_map: & Vec<Vec<i32>>){
-    /*let X = map.len();
-    let Y = map[0].len();
-    for x in 0..X {
-        for y in 0..Y {
+    /*let sx = map.len();
+    let sy = map[0].len();
+    for x in 0..sx {
+        for y in 0..sy {
             let v = adjacencies(x, y, map);
             print!("{v} ");
         }
@@ -55,24 +55,22 @@ fn heatmap(_map: & Vec<Vec<i32>>){
 }
 
 fn adjacencies(x: usize, y: usize, map: & Vec<Vec<i32>>) -> i32 {
-    let X = map.len();
-    let Y = map[0].len();
+    let sx = map.len();
+    let sy = map[0].len();
 
-    let x_less: usize = if x == 0 { X - 1 } else { x - 1 };
-    let x_more: usize = (x + 1) % X;
-    let y_less: usize = if y == 0 { Y - 1 } else { y - 1 };
-    let y_more: usize = (y + 1) % Y;
+    let x_less: usize = if x == 0 { sx - 1 } else { x - 1 };
+    let x_more: usize = (x + 1) % sx;
+    let y_less: usize = if y == 0 { sy - 1 } else { y - 1 };
+    let y_more: usize = (y + 1) % sy;
     map[x][y_less] + map[x][y_more] + map[x_less][y] + map[x_more][y]
     + map[x_less][y_less] + map [x_less][y_more] + map[x_more][y_less] + map[x_more][y_more]
 }
 
 fn nextmap(current: & Vec<Vec<i32>>, next: &mut Vec<Vec<i32>>){
-    let _X = current.len();
-    let Y = current[0].len();
 
     for x in 0..current.len() {
-        let _row = current.get(x).expect("wuh?");
-        for y in 0..Y {
+        let row = current.get(x).expect("wuh?");
+        for y in 0..row.len() {
             let adjacencies: i32 = adjacencies(x, y, current);
             let c_cell: i32 = current[x][y];
             if c_cell == 1 {
