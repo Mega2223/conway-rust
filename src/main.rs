@@ -25,7 +25,7 @@ fn getchar(map: & Vec<Vec<i32>>, pos: (i32, i32), max_d: (i32, i32)) -> char {
     }
 }
 
-fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
+fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window, heatmap: bool){
     let x_size = map.len() as i32;
     let y_size = map[0].len() as i32;
      
@@ -39,27 +39,21 @@ fn printmap(map: & Vec<Vec<i32>>, add: (i32, i32), window: & Window){
             let cx = xi/2 + add.0;
             let cy = yi + add.1;
             window.mv(yi, xi);
-            let ch = getchar(map, (cx,cy), (x_size, y_size));
+            let mut ch = getchar(map, (cx,cy), (x_size, y_size));
+            ch = if ch == ' ' && heatmap {
+                let adj = adjacencies(cx as usize, cy as usize, map);
+                if adj > 0 { adj.to_string().chars().next().unwrap_or('!') }
+                else { ' ' }
+            } else { ch };
             window.addnstr(ch.to_string() + ch.to_string().as_str(),3);
         }
     }
 }
 
-fn heatmap(_map: & Vec<Vec<i32>>){
-    /*let sx = map.len();
-    let sy = map[0].len();
-    for x in 0..sx {
-        for y in 0..sy {
-            let v = adjacencies(x, y, map);
-            print!("{v} ");
-        }
-        println!();
-    }*/
-}
-
 fn adjacencies(x: usize, y: usize, map: & Vec<Vec<i32>>) -> i32 {
     let sx = map.len();
     let sy = map[0].len();
+    if x >= sx || y >= sy { return 0; }
 
     let x_less: usize = if x == 0 { sx - 1 } else { x - 1 };
     let x_more: usize = (x + 1) % sx;
@@ -70,7 +64,6 @@ fn adjacencies(x: usize, y: usize, map: & Vec<Vec<i32>>) -> i32 {
 }
 
 fn nextmap(current: & Vec<Vec<i32>>, next: &mut Vec<Vec<i32>>){
-
     for x in 0..current.len() {
         let row = current.get(x).expect("wuh?");
         for y in 0..row.len() {
@@ -119,11 +112,10 @@ fn main() {
     noecho();
     pancurses::beep();
     pancurses::cbreak();
-    
-    
+
     resize(bmp.get_mut(0).unwrap(), size_x, size_x);
     resize(bmp.get_mut(1).unwrap(), size_y, size_y);
-    
+
     let a = bmp.get_mut(0).unwrap();
     for x in 0..size_x {
             for y in 0..size_y {
@@ -146,8 +138,7 @@ fn main() {
         );
         // println!("{i} -> {next}");
         
-        if hmp {heatmap(& bmp[i]);}
-        printmap(& bmp[i],pos, &window);
+        printmap(& bmp[i],pos, &window, hmp);
         i = next;
         
         window.mv(0,120);
